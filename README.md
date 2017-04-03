@@ -1,6 +1,6 @@
 ## CS368 FINAL PROJECT
 ### Hoofers Gear Checkout System
-#### TODO:
+#### Main Class TODO:
  - writeGearFile
     * Will take the changes made by the user and write the gear they are using to a .txt file that is their name.
  - writeNameFile
