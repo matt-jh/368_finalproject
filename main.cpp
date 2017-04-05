@@ -2,25 +2,20 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <regex>
+#include <fstream>
 
 /*
- - Not Finished, + Working
 
- + readNameFile
- + readGearFile
- - writeGearFile
- - writeNameFile
- - checkOut
- + checkIn
- + getStrInput
- + printUsersCurr
- + view
- + printMenu
- + main
+    EVERYTHING NEEDS TO BE TESTED
+    SEE JAVA FILE FOR EXPECTED BEHAVIOR
+
+    ->CURRENTLY THE NAME VECTOR UPDATES DO NOT WORK!<-
+        NEEDS POINTERS?
+
  */
 
-// Add Forward declarations for all methods
-// Continue to translate Java into C++
 // Transition from .txt database to SQL
 // Create a GUI (Can just be a window that says the same thing as the
 // prompts and has input fields that allow the user to enter the same
@@ -29,16 +24,17 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 // Forward Declarations
-std::vector<std::string> readGearFile(std::string fileName);
 std::vector<std::string> readNameFile();
+std::string getStrInput(std::string prompt);
+std::vector<std::string> readGearFile(std::string fileName);
 std::vector<std::string> splitString(std::string line, char seperator_char);
+void writeGearFile(std::vector<std::string> als, std::string name);
+void writeNameFile(std::vector<std::string> als, std::string name);
 void printUsersCurr(std::vector<std::string> currUsers);
-std::std::string getStrInput(std::string prompt);
+void checkIn(std::vector<std::string> users);
+void checkOut(std::vector<std::string> users);
 void view(std::vector<std::string> &a);
 void printMenu();
-std::string getStrInput(std::string prompt);
-void checkIn(std::vector<std::string> users);
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -64,6 +60,48 @@ std::vector<std::string> readGearFile(std::string fileName){
         return gear;
     }
     return gear;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+/**
+*@brief write the list of gear for a user to a txt file
+*@params als: a list of all the users names
+*@params name: the name of the file sans .txt
+*/
+void writeGearFile(std::vector<std::string> als, std::string name){
+    name += ".txt";
+    try {
+        std::ofstream outfile (name);
+        for(auto i : als){
+            outfile << i << std::endl;
+        }
+        outfile.close();
+    } catch (std::exception& e) {
+        std::cout << "*****Gear File Write failed!******\nSeems the program "<< 
+        "isn't working at this time." << std::endl;
+    }
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+/**
+*@brief write the list of names to a txt file
+*@params als: a list of all the users names
+*@params name: the name of the file sans .txt
+*/
+void writeNameFile(std::vector<std::string> als, std::string name){
+    name += ".txt";
+    try {
+        std::ofstream outfile (name);
+        for(auto i : als){
+            outfile << i << std::endl;
+        }
+        outfile.close();
+    } catch (std::exception& e) {
+        std::cout << "*****Name File Write failed!******\nSeems"<< 
+        "the program isn't working at this time." << std::endl;
+    }
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -120,9 +158,11 @@ std::vector<std::string> splitString(std::string line, char seperator_char){
 // Functions
 void printUsersCurr(std::vector<std::string> currUsers){
     std::sort(currUsers.begin(), currUsers.end());
-    std::cout <<"\nThe people with gear checked out are: "<< std::endl;
+    std::cout <<"\nThe users with gear checked out are: "<< std::endl;
     for(int i = 0 ; i < currUsers.size() ; i++){
-        std::cout << currUsers[i] << "\t";
+        std::string s = currUsers[i];
+        s.erase(s.find_last_of("."), std::string::npos);
+        std::cout << s << "\t";
     }
     // Done for cleaner looking interface
     std::cout << std::endl;
@@ -137,47 +177,10 @@ void printUsersCurr(std::vector<std::string> currUsers){
  * @returns A string of the user's response
  **/
 // Functions
-std::std::string getStrInput(std::string prompt){
+std::string getStrInput(std::string prompt){
     std::cout << prompt << std::endl;
     std::getline (std::cin, prompt);
     return prompt;
-}
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-/**
- * @brief Shows the user's gear
- * @params The vector of the user's gear
- **/
-void view(std::vector<std::string> &a){
-    bool testUser = false;
-    bool hitB = false;
-    
-    do{
-        printUsersCurr(a);
-        std::string user = getStrInput("If you would like to view a users list enter the name. Otherwise hit 'b' to go back ");
-        
-        std::tolower(user);
-        user = user + ".txt";
-        
-        if(a.contains(user)) {
-            testUser = true;
-            // Print the users gear file
-            std::vector<string> gear;
-            gear = readGearFile(user);
-            for(auto i: gear){
-                std::cout << i << " ";
-            }
-            std::cout << std::endl;
-            
-        }else if( user == "b.txt"){
-            testUser = true;
-            hitB = true;
-        }else{
-            std::cout << "That user was not found!" << std::endl;
-        }
-        
-    }while(!testUser || !hitB);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -206,10 +209,9 @@ void view(std::vector<std::string> &a){
 
 	do{
 		printUsersCurr(a);
-		std::string user = getStrInput("If you would like to view a users list enter the name. Otherwise hit 'b' to go back ");
-
-
-		std::transform(user.begin(), user.end(), user.begin(), easytolower);
+        std::string userPrompt = "If you would like to view a users list enter";
+        userPrompt += " the name. \nOtherwise hit 'b' to go back ";
+		std::string user = getStrInput(userPrompt);
 
 		//std::transform(user.begin(), user.end(), user.begin(), ::tolower);
 
@@ -217,9 +219,14 @@ void view(std::vector<std::string> &a){
 		for (std::string::size_type i=0; i<user.length(); ++i)
 			std::cout << std::tolower(user[i], loc);
 		*/
-
 		user = user + ".txt";
 		if ( std::find(a.begin(), a.end(), user) != a.end()){
+            std::cout<<"\n"
+            <<
+            "_______________________________"
+            <<"____________________________________"
+            <<"\n"
+            <<std::endl;
 			testUser = true;
 			// Print the users gear file
 			std::vector<std::string> gear;
@@ -228,28 +235,30 @@ void view(std::vector<std::string> &a){
 				std::cout << i << " ";
 			}
 			std::cout << std::endl;
-
+            std::cout<<"\n"
+            <<
+            "_______________________________"
+            <<"____________________________________"
+            <<"\n"
+            <<std::endl;
 		}else if( user == "b.txt"){
 			testUser = true;
 			hitB = true;
 		}else{
 			std::cout << "That user was not found!" << std::endl;
 		}
-
 	}while(!testUser || !hitB);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /**
- * @brief Given a specified prompt return the user's input
- * @param prompt
- * @return the user's response
- */
-std::string getStrInput(std::string prompt){
-	//std::string stringIn;
-	std::cout << prompt << std::endl;
-	std::getline (std::cin, prompt);
-	return prompt;
+*@brief helper to convert to lower. Had problems with tolower.
+*@params input char to convert
+*/
+char easytolower(char in){
+    if(in<='Z' && in>='A')
+        return in-('Z'-'z');
+    return in;
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -259,113 +268,195 @@ std::string getStrInput(std::string prompt){
  */
 void checkIn(std::vector<std::string> users) {
 
-	bool hitB = false;
+    bool hitB = false;
 
-	std::vector<std::string> checkOutGear;
+    std::vector<std::string> checkOutGear;
 
-	bool returning_all = true;
-	bool check = false;
+    bool returning_all = true;
+    bool check = false;
 
-	do {
-		printUsersCurr(users);
-		std::string user = getStrInput("Please enter the user id from this list for the person returning gear or hit 'b' to o back.");
+    do {
+        printUsersCurr(users);
+        std::string userPrompt = "Please enter the user id from this list for";
+        userPrompt+=" the person returning gear or hit 'b' to o back.";
+        std::string user = getStrInput(userPrompt);
 
-		// Replace with C++ contains equiv
-		//std::any_of(foo.begin(), foo.end(), [](int i){return i<0;})
-		if ((std::find(users.begin(), users.end(), user+".txt")!=users.end()) && user !="b"){
-			//if (a.contains(user+".txt") && (user !="b"){
-			do {
-				std::string all = getStrInput("Are you returning all items? (y/n)");
+        // Replace with C++ contains equiv
+        //std::any_of(foo.begin(), foo.end(), [](int i){return i<0;})
+        if ((std::find(users.begin(), users.end(), user+".txt")!=users.end()) 
+            && user !="b"){
+            //if (a.contains(user+".txt") && (user !="b"){
+            do {
+                std::string all = getStrInput(
+                    "Are you returning all items? (y/n)");
 
-				std::transform(all.begin(), all.end(), all.begin(), easytolower);
-				if (all == "y" || all == "n") {
-					if (all == "y") {
-						returning_all = true;
-						check = true;
-					} else if (all == "n") {
-						returning_all = false;
-						check = true;
-					}
-				} else {
-					std::cout << "Invalid input. Try again." << std::endl;
-				}
-			} while (!check);
+                std::transform(all.begin(),all.end(),all.begin(),easytolower);
+                if (all == "y" || all == "n") {
+                    if (all == "y") {
+                        returning_all = true;
+                        check = true;
+                    } else if (all == "n") {
+                        returning_all = false;
+                        check = true;
+                    }
+                } else {
+                    std::cout << "Invalid input. Try again." << std::endl;
+                }
+            } while (!check);
 
-			if (!returning_all) {
-				std::cout << "\nHere is a list of the gear you checked " <<
-						  "out and the expected return date\n" << std::endl;
+            if (!returning_all) {
+                std::cout << "\nHere is a list of the gear you checked " <<
+                          "out and the expected return date\n" << std::endl;
 
-				// Print the users gear file
-				std::vector <std::string> gear = readGearFile(user + ".txt");
-				for (auto item : gear) {
-					std::cout << item << " " << std::endl;
-				}
-				// Find equiv of regexp
-				std::string prompt = "Please enter the items that you are not "
-						"yet returning in the formPlease put '/' between items "
-						"(no space needed) and ',' between the item name and "
-						"the quantity(no space needed).\nFor Example: sleeping "
-						"pad,2/tent,1";
-				std::vector <std::string> outstanding;
-				//= getStrInput(prompt).split("\\s*\\/\\s*");
+                // Print the users gear file
+                std::vector <std::string> gear = readGearFile(user + ".txt");
+                for (auto item : gear) {
+                    std::cout << item << " " << std::endl;
+                }
+                // Find equiv of regexp
+                std::string prompt = "Please enter the items that you are not "
+                        "yet returning in the formPlease put '/' between items "
+                        "(no space needed) and ',' between the item name and "
+                        "the quantity(no space needed).\nFor Example: sleeping "
+                        "pad,2/tent,1";
+                std::vector <std::string> outstanding;
+                //= getStrInput(prompt).split("\\s*\\/\\s*");
 
-				std::string s = getStrInput(prompt);
-				std::regex e("\\s*\\/\\s*");
-				std::regex_token_iterator <std::string::iterator> i(s.begin(), s.end(), e,
-																	-1);
-				std::regex_token_iterator <std::string::iterator> end;
-				while (i != end){
-					outstanding.push_back(*i++);
-				}
+                std::string s = getStrInput(prompt);
+                std::regex e("\\s*\\/\\s*");
+                std::regex_token_iterator <std::string::iterator> i(s.begin(), 
+                    s.end(), e, -1);
+                std::regex_token_iterator <std::string::iterator> end;
+                while (i != end){
+                    outstanding.push_back(*i++);
+                }
 
-				//.split("\\s*\\/\\s*");
-				// C++ Regexp support
+                        //.split("\\s*\\/\\s*");
 
+                // Add to an arraylist
+                for (auto tempSplit : outstanding) {
+                    checkOutGear.push_back(tempSplit);
+                }
 
-				// Add to an arraylist
-				for (auto tempSplit : outstanding) {
-					checkOutGear.push_back(tempSplit);
-				}
+                std::cout << "Updating File....." << std::endl;
+                writeGearFile(checkOutGear, user);
+                std::cout << "  Done.\nThanks!" << std::endl;
+                hitB = true;
 
-				std::cout << "Updating File....." << std::endl;
-				//writeGearFile(checkOutGear, user);
-				std::cout << "  Done.\nThanks!" << std::endl;
-				hitB = true;
+            } else {
+                try {
+                    std::cout << "Updating Files....." << std::endl;
+                    hitB = true;
+                    // Remove Erase
+                    users.erase(std::remove(users.begin(), users.end(), 
+                        user+".txt"), users.end());
 
-			} else {
-				try {
-					std::cout << "Updating Files....." << std::endl;
-					hitB = true;
-					// Remove Erase
-					users.erase(std::remove(users.begin(), users.end(), user+".txt"), users.end());
+                    std::string fileToRemove = user+".txt";
+                    remove(fileToRemove.c_str());
 
-					std::string fileToRemove = user+".txt";
-					remove(fileToRemove.c_str());
+                    std::ofstream outputFile;
+                    outputFile.open(user+".txt");
 
-					// C++ Equivalent
-					std::ofstream outputFile;
-					outputFile.open(user+".txt");
+                } catch (std::exception& e) {
+                    std::cout << "Error in file update! Return the hear " <<
+                            "normally and if\nany one asks tell them you got "<<
+                            "this error.\nIts possible your gear was already"<<
+                            " marked returned" << std::endl;
+                }
+                std::cout << "  Done.\nThanks!" <<  std::endl;
+            }
+        }else if(user == "b"){
+            hitB = true;
+        }else{
+            std::cout << "Invalid user name please try again" << std::endl;
+        }
 
-					//File f = new File(user + ".txt");
-					//f.createNewFile();
-					// bool b = f.delete();
-
-				} catch (std::exception& e) {
-					std::cout << "Error in file update! Return the hear " <<
-							  "normally and if\nany one asks tell them you got "<<
-							  "this error.\nIts possible your gear was already"<<
-							  " marked returned" << std::endl;
-				}
-				std::cout << "  Done.\nThanks!" <<  std::endl;
-			}
-		}else if(user == "b"){
-			hitB = true;
-		}else{
-			std::cout << "Invalid user name please try again" << std::endl;
-		}
-
-	}while(!hitB);
+    }while(!hitB);
 }
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+/**
+*@brief the function that allows a user to check out gear 
+*@params a vector of users
+*/
+void checkOut(std::vector<std::string> users){
+
+        std::vector<std::string> checkOutGear;
+        bool hitB = false;
+
+        do {
+            std::string tripLeader = "Please enter the trip leader's lastname";
+            tripLeader += " or hit 'b' to go back.";
+            tripLeader = getStrInput(tripLeader);
+
+            if(easytolower(tripLeader[0]) != 'b'){
+                std::string temp = getStrInput(
+                        "Please enter the trip leader's first initial.");
+                std::string userName = temp + tripLeader; 
+                // First_initialLastname
+                
+                std::transform(userName.begin(), userName.end(), 
+                    userName.begin(), easytolower);
+
+
+                std::string returnDate = "Please enter the expected date for ";
+                returnDate += "returning the gear. (mm/dd/yy)";
+                returnDate = getStrInput(returnDate);
+
+                temp = userName + ".txt";
+                if(std::find(users.begin(), users.end(), userName + ".txt") 
+                    != users.end()){
+                    // Include Date
+                    std::cout << "It looks like you already have gear checked "
+                            << "out. You can check out more, but please " 
+                            << "remember to return both sets of gear.\n" 
+                            << std::endl;
+                }
+
+                std::string items ="Please enter all the items you wish ";
+                items+= "to use and the quantity of that item.\nPlease put '/'";
+                items+= " between items (no space needed) and ',' between the";
+                items+= "\nitem name and the quantity(no space needed).\n";
+                items+= "For Example: sleeping pad,2/tent,1";
+                items = getStrInput(items);
+
+                // Add to an arraylist
+                std::vector<std::string> tempSplit;
+                // = items.split("\\s*/\\s*");
+                // Java equiv:
+                // String split[] = items.split("\\s*\\/\\s*");
+                std::regex e("\\s*\\/\\s*");
+                std::regex_token_iterator <std::string::iterator> i(
+                    items.begin(), 
+                    items.end(),
+                     e, -1);
+                std::regex_token_iterator <std::string::iterator> end;
+
+                while (i != end){
+                    tempSplit.push_back(*i++);
+                }
+
+                for(auto i: tempSplit){
+                    checkOutGear.push_back(i);
+                }
+
+                checkOutGear.push_back(returnDate);
+
+                // Write the file
+                std::cout << "Saving File....." << std::endl;
+                writeGearFile(checkOutGear, userName);
+                std::cout << "Done." << std::endl;
+                // Add to the list of names
+                users.push_back(userName + ".txt");
+                std::cout << "Items Recorded! Have Fun!" << std::endl;
+
+                hitB = true;
+            } else {
+                hitB = true;
+            }
+        }while(!hitB);
+    }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -390,8 +481,8 @@ int main() {
     do {
         printMenu();
         std::string s = getStrInput("");
-        if(s.size() != 1){
-            std::tolower(s[0]);
+        if(s.length() == 1){
+            s = easytolower(s[0]);
             if ((s == "v") || (s == "o")|| (s == "i") || (s == "q") ) {
                 valid_bool = true;
                 if(s=="v"){
@@ -412,7 +503,7 @@ int main() {
             }
         } else {
             std::cout << "Seems you entered an invalid command. " <<
-            "Please try again." << std::endl;
+            "Please only enter one command." << std::endl;
         }
     }while(!valid_bool || !hitQ);
     
