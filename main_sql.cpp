@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <regex>
 #include <fstream>
+#include <sqlite3.h>
+#include <ctime>
+
+// http://cs.dvc.edu/HowTo_SQL.html
 
 /*
 
@@ -24,10 +28,13 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 // Forward Declarations
+char easytolower(char in);
 std::vector<std::string> readNameFile();
 std::string getStrInput(std::string prompt);
 std::vector<std::string> readGearFile(std::string fileName);
 std::vector<std::string> splitString(std::string line, char seperator_char);
+void insert_sql(std::string name,std::string gear,std::string date,sqlite3 *db);
+void mainDoWhile(sqlite3  *db, std::vector<std::string> input_vector);
 void writeGearFile(std::vector<std::string> als, std::string name);
 void writeNameFile(std::vector<std::string> als, std::string name);
 void printUsersCurr(std::vector<std::string> currUsers);
@@ -379,104 +386,117 @@ void checkIn(std::vector<std::string> &users) {
 *@brief the function that allows a user to check out gear 
 *@params a vector of users
 */
-void checkOut(std::vector<std::string> &users){
+void checkOut(std::vector<std::string> &users, sqlite3  *db){
 
-        std::vector<std::string> checkOutGear;
-        bool hitB = false;
+    time_t t = time(NULL);
+    tm* timePtr = localtime(&t);
 
-        do {
-            std::string tripLeader = "Please enter the trip leader's lastname";
-            tripLeader += " or hit 'b' to go back.";
-            tripLeader = getStrInput(tripLeader);
+    std::vector<std::string> checkOutGear;
+    bool hitB = false;
 
-            if(easytolower(tripLeader[0]) != 'b'){
-                std::string temp = getStrInput(
-                        "Please enter the trip leader's first initial.");
-                std::string userName = temp + tripLeader; 
-                // First_initialLastname
+    do {
+        std::string tripLeader = "Please enter the trip leader's lastname";
+        tripLeader += " or hit 'b' to go back.";
+        tripLeader = getStrInput(tripLeader);
+
+        if(easytolower(tripLeader[0]) != 'b'){
+            std::string temp = getStrInput(
+                    "Please enter the trip leader's first initial.");
+            std::string userName = temp + tripLeader; 
+            // First_initialLastname
                 
-                std::transform(userName.begin(), userName.end(), 
-                    userName.begin(), easytolower);
+            std::transform(userName.begin(), userName.end(), 
+                userName.begin(), easytolower);
 
 
-                std::string returnDate = "Please enter the expected date for ";
-                returnDate += "returning the gear. (mm/dd/yy)";
-                returnDate = getStrInput(returnDate);
+            std::string returnDate = "Please enter the expected date for ";
+            returnDate += "returning the gear. (mm-dd)";
+            int year = timePtr->tm_year;
+            year += 1900;
+            std::string tempFormating = std::to_string(year);
+            returnDate = getStrInput(returnDate);
+            tempFormating += returnDate;
 
-                temp = userName + ".txt";
-                if(std::find(users.begin(), users.end(), userName + ".txt") 
-                    != users.end()){
-                    // Include Date
-                    std::cout << "It looks like you already have gear checked "
-                            << "out. You can check out more, but please " 
-                            << "remember to return both sets of gear.\n" 
-                            << std::endl;
-                }
-
-                std::string items ="Please enter all the items you wish ";
-                items+= "to use and the quantity of that item.\nPlease put '/'";
-                items+= " between items (no space needed) and ',' between the";
-                items+= "\nitem name and the quantity(no space needed).\n";
-                items+= "For Example: sleeping pad,2/tent,1";
-                items = getStrInput(items);
-
-                // Add to an arraylist
-                std::vector<std::string> tempSplit;
-                // = items.split("\\s*/\\s*");
-                // Java equiv:
-                // String split[] = items.split("\\s*\\/\\s*");
-                std::regex e("\\s*\\/\\s*");
-                std::regex_token_iterator <std::string::iterator> i(
-                    items.begin(), 
-                    items.end(),
-                     e, -1);
-                std::regex_token_iterator <std::string::iterator> end;
-
-                while (i != end){
-                    tempSplit.push_back(*i++);
-                }
-
-                for(auto i: tempSplit){
-                    checkOutGear.push_back(i);
-                }
-
-                checkOutGear.push_back(returnDate);
-
-                // Write the file
-                std::cout << "Saving File....." << std::endl;
-                writeGearFile(checkOutGear, userName);
-                std::cout << "Done." << std::endl;
-                // Add to the list of names
-                users.push_back(userName + ".txt");
-                std::cout << "Items Recorded! Have Fun!" << std::endl;
-
-                hitB = true;
-            } else {
-                hitB = true;
+            temp = userName + ".txt";
+            if(std::find(users.begin(), users.end(), userName + ".txt") 
+                != users.end()){
+                // Include Date
+                std::cout << "It looks like you already have gear checked "
+                        << "out. You can check out more, but please " 
+                        << "remember to return both sets of gear.\n" 
+                        << std::endl;
             }
-        }while(!hitB);
-    }
+
+            std::string items ="Please enter all the items you wish ";
+            items+= "to use and the quantity of that item.\nPlease put '/'";
+            items+= " between items (no space needed) and ',' between the";
+            items+= "\nitem name and the quantity(no space needed).\n";
+            items+= "For Example: sleeping pad,2/tent,1";
+            items = getStrInput(items);
+
+            // Add to an arraylist
+            std::vector<std::string> tempSplit;
+            // = items.split("\\s*/\\s*");
+            // Java equiv:
+            // String split[] = items.split("\\s*\\/\\s*");
+            std::regex e("\\s*\\/\\s*");
+            std::regex_token_iterator <std::string::iterator> i(
+                items.begin(), 
+                items.end(),
+                e, -1);
+            std::regex_token_iterator <std::string::iterator> end;
+
+            while (i != end){
+                tempSplit.push_back(*i++);
+            }
+
+            for(auto i: tempSplit){
+                checkOutGear.push_back(i);
+            }
+
+            // Modify so date is not added to gear list
+            checkOutGear.push_back(returnDate);
+
+            // Write the file
+            std::cout << "Saving File....." << std::endl;
+            writeGearFile(checkOutGear, userName);
+            std::cout << "Done." << std::endl;
+            // Add to the list of names
+            users.push_back(userName + ".txt");
+            std::cout << "Items Recorded! Have Fun!" << std::endl;
+
+            hitB = true;
+        } else {
+            hitB = true;
+        }
+    }while(!hitB);
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
-/**
- * @brief Runs the database reads, calls the print menu and validates commands
- * @brief Calls the writes when editing is done
- **/
-int main() {
-    
-    std::vector<std::string> nameList;
-    
+void insert_sql(std::string name, std::string gear, std::string date, sqlite3  *db ){
+
+    std::string stmt = "INSERT INTO abe_account VALUES ('";
+    stmt += name + "," + gear + "," + date + "'');";
+
+    if (sqlite3_open("userDatabase.db", &db) == SQLITE_OK){
+        sqlite3_prepare(db,stmt.c_str(), -1, &stmt, NULL );
+        //preparing the statement
+        sqlite3_step(stmt);
+        //executing the statement
+    }else{
+        std::cout << "Failed to open db" << std::endl;
+    }
+
+    sqlite3_finalize(stmt);
+
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+void mainDoWhile(sqlite3  *db, std::vector<std::string> input_vector){
     bool valid_bool = false;
     bool hitQ = false;
-    
-    std::vector<std::string> input_vector;
-    input_vector = readNameFile();
-    if(input_vector.size() == 0){
-        std::cout << "Error Reading Gear! Quitting..." << std::endl;
-        return 0;
-    }
-    
     do {
         printMenu();
         std::string s = getStrInput("");
@@ -489,7 +509,7 @@ int main() {
                     view(input_vector);
                 }else if(s=="o"){
                     // Check out gear
-                    checkOut(input_vector);
+                    checkOut(input_vector, db);
                 }else if(s=="i"){
                     checkIn(input_vector);
                     // Check in Gear
@@ -505,10 +525,39 @@ int main() {
                     "Please only enter one command." << std::endl;
         }
     }while(!valid_bool || !hitQ);
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+/**
+ * @brief Runs the database reads, calls the print menu and validates commands
+ * @brief Calls the writes when editing is done
+ **/
+int main() {
+
+    // Start SQL Access
+    sqlite3 *db;
+    sqlite3_stmt * stmt;
+    std::string db_name = "userDatabase.db";
+
+    std::vector<std::string> nameList;    
+    std::vector<std::string> input_vector;
+
+    // Check if the gear file can be opened properly 
+    input_vector = readNameFile();
+    if(input_vector.size() == 0){
+        std::cout << "Error Reading Gear! Quitting..." << std::endl;
+        return 0;
+    }
+    
+    mainDoWhile(db, input_vector);
     
     std::cout << "Quitting.....";
     writeNameFile(input_vector, "names");
     std::cout << "\nDone." << std::endl;
     
+    sqlite3_close(db);
+    
+
     return 0;
 }
