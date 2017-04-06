@@ -6,7 +6,9 @@
 #include <regex>
 #include <fstream>
 #include <sqlite3.h>
+#include <stdio.h>
 #include <ctime>
+
 
 // http://cs.dvc.edu/HowTo_SQL.html
 
@@ -474,7 +476,7 @@ void checkOut(std::vector<std::string> &users, sqlite3  *db){
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
-void insert_sql(std::string name, std::string gear, std::string date, sqlite3  *db ){
+oid insert_sql(std::string name, std::string gear, std::string date, sqlite3  *db ){
 
     std::string stmt = "INSERT INTO abe_account VALUES ('";
     stmt += name + "," + gear + "," + date + "'');";
@@ -490,7 +492,7 @@ void insert_sql(std::string name, std::string gear, std::string date, sqlite3  *
 
     sqlite3_finalize(stmt);
 
-}
+}v
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
