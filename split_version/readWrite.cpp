@@ -28,7 +28,9 @@ std::vector<std::string> readGearFile(std::string fileName){
     // If the file open worked read and add contents to a vector
     if(infile){
         for( std::string line; getline(infile, line ); ){
-            gear.push_back(line);
+            if(line[0] != '#'){
+                gear.push_back(line);
+            }
         }
     }
     // Checking if the file was opened improperly
@@ -40,27 +42,25 @@ std::vector<std::string> readGearFile(std::string fileName){
     return gear;
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /**
 *@brief write the list of gear for a user to a txt file
 *@params als: a list of all the users names
 *@params name: the name of the file sans .txt
 */
 void writeGearFile(std::vector<std::string> als, std::string name){
-    name += ".txt";
+    name += ".csv";
     try {
         std::ofstream outfile (name);
+        outfile << "#Item Name, Quantity" << std::endl;
         for(auto i : als){
             outfile << i << std::endl;
         }
         outfile.close();
     } catch (std::exception& e) {
-        std::cout << "*****Gear File Write failed!******\nSeems the program "<< 
+        std::cout << "*****Gear File Write failed!******\nSeems the program "<<
         "isn't working at this time." << std::endl;
     }
 }
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 /**
 *@brief write the list of names to a txt file
@@ -68,20 +68,20 @@ void writeGearFile(std::vector<std::string> als, std::string name){
 *@params name: the name of the file sans .txt
 */
 void writeNameFile(std::vector<std::string> als, std::string name){
-    name += ".txt";
+    name += ".csv";
     try {
         std::ofstream outfile (name);
+        outfile << "#User Names" << std::endl;
         for(auto i : als){
             outfile << i << std::endl;
         }
         outfile.close();
     } catch (std::exception& e) {
-        std::cout << "*****Name File Write failed!******\nSeems"<< 
+        std::cout << "*****Name File Write failed!******\nSeems"<<
         "the program isn't working at this time." << std::endl;
     }
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /**
  * @brief Given a name of a file read it in. Return nothing if not found/opened
  * @returns the vector containing the names of people using gear
@@ -89,21 +89,23 @@ void writeNameFile(std::vector<std::string> als, std::string name){
 std::vector<std::string> readNameFile(){
     std::vector<std::string> input;
     input.clear();
-    std::ifstream infile("names.txt");
+    std::ifstream infile("names.csv");
     // If the file open worked read and add contents to a vector
     if(infile){
         for( std::string line; getline( infile, line ); ){
-            input.push_back(line);
+            if(line[0] != '#'){
+                input.push_back(line);
+            }
         }
     }else{
         std::fstream file;
-        file.open("names.txt", std::fstream::out);
+        file.open("names.csv", std::fstream::out);
     }
-    std::ifstream infile2("names.txt");
+    std::ifstream infile2("names.csv");
     // Checking if the file was opened improperly
     if(!infile2){
-        std::cout 
-                << "Couldn't open names.txt for reading\n"
+        std::cout
+                << "Couldn't open names.csv for reading\n"
                 << std::endl;
         throw std::exception();
     }

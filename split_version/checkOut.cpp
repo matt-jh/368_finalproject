@@ -17,7 +17,7 @@
 #include "view.h"
 
 /**
-*@brief the function that allows a user to check out gear 
+*@brief the function that allows a user to check out gear
 *@params a vector of users
 */
 void checkOut(std::vector<std::string> &users){
@@ -29,7 +29,7 @@ void checkOut(std::vector<std::string> &users){
             std::string tripLeader = "\033[7;1mPlease enter the trip leader's ";
             tripLeader += "lastname or hit 'b' to go back.      \033[0m";
             tripLeader = getStrInput(tripLeader);
-            
+
             for(auto lower: tripLeader){
                 etl(lower);
             }
@@ -38,10 +38,10 @@ void checkOut(std::vector<std::string> &users){
             	std::string temp = "\033[7;1m\nPlease enter the trip leader's";
                 temp += " first initial.                       \033[0m";
                 temp = getStrInput(temp);
-                std::string userName = temp + tripLeader; 
+                std::string userName = temp + tripLeader;
                 // First_initialLastname
-                
-                std::transform(userName.begin(), userName.end(), 
+
+                std::transform(userName.begin(), userName.end(),
                     userName.begin(), etl);
                 remove_if(userName.begin(), userName.end(), isspace);
 
@@ -56,16 +56,16 @@ void checkOut(std::vector<std::string> &users){
                 	if(checkDate(returnDate)){
                 		vaild_date = true;
                 	}else{
-                		std::cout 
+                		std::cout
                 				<< "\033[33mSeems you entered "
-                				<< "an invalid date!\033[0m" 
+                				<< "an invalid date!\033[0m"
                 				<< std::endl;
                 	}
                 }while(!vaild_date);
-                
 
-                temp = userName + ".txt";
-                if(std::find(users.begin(), users.end(), userName + ".txt") 
+
+                temp = userName + ".csv";
+                if(std::find(users.begin(), users.end(), userName + ".csv")
                     != users.end()){
                     // Include Date
                     std::string pls_ret="\033[33;1mIt looks like you already";
@@ -82,7 +82,7 @@ void checkOut(std::vector<std::string> &users){
                 items += " (no space needed).	 	    \033[0m\n";
                 items += "For Example: sleeping pad,2/tent,1\n";
                 items = getStrInput(items);
-                
+
 
                 // Add to an arraylist
                 std::vector<std::string> tempSplit;
@@ -91,7 +91,7 @@ void checkOut(std::vector<std::string> &users){
                 // String split[] = items.split("\\s*\\/\\s*");
                 std::regex e("\\s*\\/\\s*");
                 std::regex_token_iterator <std::string::iterator> i(
-                    items.begin(), 
+                    items.begin(),
                     items.end(),
                      e, -1);
                 std::regex_token_iterator <std::string::iterator> end;
@@ -113,7 +113,7 @@ void checkOut(std::vector<std::string> &users){
                 writeGearFile(checkOutGear, userName);
                 std::cout << "\033[32;1mDone.\033[0m" << std::endl;
                 // Add to the list of names
-                users.push_back(userName + ".txt");
+                users.push_back(userName + ".csv");
                 std::sort(users.begin(), users.end()); // <- ADDED SORT
                 std::cout << "Items Recorded! Have Fun!" << std::endl;
 

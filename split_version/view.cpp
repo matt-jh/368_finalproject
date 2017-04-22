@@ -38,7 +38,7 @@ void view(std::vector<std::string> &a){
 			for (std::string::size_type i=0; i<user.length(); ++i)
 				std::cout << std::tolower(user[i], loc);
 			*/
-			user = user + ".txt";
+			user = user + ".csv";
 			if ( std::find(a.begin(), a.end(), user) != a.end()){
 	            std::cout<<"\n"
 	                    <<"_______________________________"
@@ -61,7 +61,7 @@ void view(std::vector<std::string> &a){
 	                    <<"____________________________________"
 	                    <<"\n"
 	                    <<std::endl;
-			}else if( user == "b.txt"){
+			}else if( user == "b.csv"){
 				testUser = true;
 				hitB = true;
 			}else{

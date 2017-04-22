@@ -39,9 +39,9 @@ void checkIn(std::vector<std::string> &users) {
 
 	        // Replace with C++ contains equiv
 	        //std::any_of(foo.begin(), foo.end(), [](int i){return i<0;})
-	        if ((std::find(users.begin(),users.end(), user+".txt")
+	        if ((std::find(users.begin(),users.end(), user+".csv")
 	        		!=users.end()) && user !="b"){
-	            //if (a.contains(user+".txt") && (user !="b"){
+	            //if (a.contains(user+".csv") && (user !="b"){
 	            do {
 	            	std::string all_prompt="\033[7;1m\nAre you returning ";
 	            	all_prompt += "all items? (y/n)\t\t\t\t    \033[0m";
@@ -57,9 +57,9 @@ void checkIn(std::vector<std::string> &users) {
 	                        check = true;
 	                    }
 	                } else {
-	                    std::cout 
+	                    std::cout
 	                    		<< "\033[31;1mInvalid input. Try again."
-	                    		<< "\033[0m" 
+	                    		<< "\033[0m"
 	                    		<< std::endl;
 	                }
 	            } while (!check);
@@ -67,11 +67,11 @@ void checkIn(std::vector<std::string> &users) {
 	            if (!returning_all) {
 	                std::cout << "\033[7;1m\nHere is a list of the gear you"
 	                		<< " checked out :\t\t\t   "
-	                		<< "\033[0m\n" 
+	                		<< "\033[0m\n"
 	                		<< std::endl;
 
 	                // Print the users gear file
-	                std::vector<std::string> gear=readGearFile(user+".txt");
+	                std::vector<std::string> gear=readGearFile(user+".csv");
 	                for (auto item : gear) {
 	                    std::cout << item << " " << std::endl;
 	                }
@@ -105,21 +105,25 @@ void checkIn(std::vector<std::string> &users) {
 	                for (auto tempSplit : outstanding) {
 	                    	checkOutGear.push_back(tempSplit);
 	                }
+	                // Add the expected date so it can be seen how overdue
+	                // items are
+	                int last_ind = gear.size()-1;
+	                checkOutGear.push_back(gear[last_ind]);
 
 	                if(checkOutGear.size() == 0){
 	                	try {
 		                    std::cout << "Updating Files....." << std::endl;
 		                    hitB = true;
 		                    // Remove Erase
-		                    users.erase(std::remove(users.begin(), users.end(), 
-		                        user+".txt"), users.end());
+		                    users.erase(std::remove(users.begin(), users.end(),
+		                        user+".csv"), users.end());
 
-                            std::sort(users.begin(), users.end()); 
+                            std::sort(users.begin(), users.end());
 
 		                    std::ofstream outputFile;
-		                    outputFile.open(user + ".txt");
+		                    outputFile.open(user + ".csv");
 
-		                    std::string fileToRemove = user+".txt";
+		                    std::string fileToRemove = user+".csv";
 		                    remove(fileToRemove.c_str());
 
 	                	} catch (std::exception& e) {
@@ -138,21 +142,21 @@ void checkIn(std::vector<std::string> &users) {
 	                    std::cout << "Updating Files....." << std::endl;
 	                    hitB = true;
 	                    // Remove Erase
-	                    users.erase(std::remove(users.begin(), users.end(), 
-	                        user+".txt"), users.end());
+	                    users.erase(std::remove(users.begin(), users.end(),
+	                        user+".csv"), users.end());
 
 	                    std::ofstream outputFile;
-	                    outputFile.open(user+".txt");
+	                    outputFile.open(user+".csv");
 
-	                    std::string fileToRemove = user + ".txt";
+	                    std::string fileToRemove = user + ".csv";
 	                    std::cout << fileToRemove << std::endl;
 	                    remove(fileToRemove.c_str());
 
 	                } catch (std::exception& e) {
-	                    std::cout<<"Error in file update! Return the hear " 
+	                    std::cout<<"Error in file update! Return the hear "
 	                    		<<"normally and if\nany one asks tell them"
 	                    		<< "you got this error.\nIts possible your"
-	                    		<< " gear was already marked returned" 
+	                    		<< " gear was already marked returned"
 	                    		<< std::endl;
 	                }
 	                std::cout << "\033[32;1mDone.\nThanks!\033[0m" << std::endl;
@@ -160,7 +164,7 @@ void checkIn(std::vector<std::string> &users) {
 	        }else if(user == "b"){
 	            hitB = true;
 	        }else{
-	            std::cout << "Invalid user name please try again" 
+	            std::cout << "Invalid user name please try again"
 	            		<< std::endl;
 	        }
 
