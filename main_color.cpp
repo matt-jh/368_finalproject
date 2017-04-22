@@ -30,33 +30,6 @@ void view(std::vector<std::string> &a);
 void printMenu();
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-/**
- * @brief Given a name of a file read it in. Return nothing if not found/opened
- * @params the name of the gear file
- * @return the vector of gear in the file
- **/
-std::vector<std::string> readGearFile(std::string fileName){
-    std::vector<std::string> gear;
-    gear.clear();
-    std::ifstream infile(fileName);
-    // If the file open worked read and add contents to a vector
-    if(infile){
-        for( std::string line; getline(infile, line ); ){
-            gear.push_back(line);
-        }
-    }
-    // Checking if the file was opened improperly
-    else {
-        std::cout << "Couldn't open " << fileName << " for reading\n"
-        << std::endl;
-        return gear;
-    }
-    return gear;
-}
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief ensures that the user enters a valid date
  * @params the sting containing the user entered date
@@ -64,13 +37,7 @@ std::vector<std::string> readGearFile(std::string fileName){
  **/
 bool checkDate(std::string longdate){
 	std::vector<std::string> words;
-    char seperator_char = '/';
-    for(size_t p = 0, q = 0; p != longdate.npos; p = q) {
-         // Split if the length 1 substring after is a space
-         words.push_back(longdate.substr(p + (p != 0),
-                (q = longdate.find(seperator_char, p + 1))
-                - p - (p != 0)));
-    }
+    words = splitString(longdate, '/');
 
    	std::string month = words[0];
    	std::string day = words[1];
@@ -103,10 +70,32 @@ bool checkDate(std::string longdate){
    return valid;
 }
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+/**
+ * @brief Given a name of a file read it in. Return nothing if not found/opened
+ * @params the name of the gear file
+ * @return the vector of gear in the file
+ **/
+std::vector<std::string> readGearFile(std::string fileName){
+    std::vector<std::string> gear;
+    gear.clear();
+    std::ifstream infile(fileName);
+    // If the file open worked read and add contents to a vector
+    if(infile){
+        for( std::string line; getline(infile, line ); ){
+            gear.push_back(line);
+        }
+    }
+    // Checking if the file was opened improperly
+    else {
+        std::cout << "Couldn't open " << fileName << " for reading\n"
+        << std::endl;
+        return gear;
+    }
+    return gear;
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-
 /**
 *@brief write the list of gear for a user to a txt file
 *@params als: a list of all the users names
@@ -148,7 +137,6 @@ void writeNameFile(std::vector<std::string> als, std::string name){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief Given a name of a file read it in. Return nothing if not found/opened
  * @returns the vector containing the names of people using gear
@@ -173,7 +161,6 @@ std::vector<std::string> readNameFile(){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief Splits the given line based on the given char
  * @params The line to be edited
@@ -193,7 +180,6 @@ std::vector<std::string> splitString(std::string line, char seperator_char){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief Print users with gear checked out
  * @params A vector containing the users
@@ -203,15 +189,24 @@ void printUsersCurr(std::vector<std::string> currUsers){
 	if(currUsers.size() <= 0){
 		throw std::exception();
 	}
+    int width = 0;
     std::sort(currUsers.begin(), currUsers.end());
     std::cout 
     		<< "\033[7;1m\nThe users with gear checked out are: " 
     		<< "                               \033[0m"
     		<< std::endl;
+    std::string s = "";
     for(int i = 0 ; i < currUsers.size() ; i++){
-        std::string s = currUsers[i];
+        s = currUsers[i];
         s.erase(s.find_last_of("."), std::string::npos);
-        std::cout << s << "\t";
+        width += s.length();
+        width += 2;
+        //std::cout << width << std::endl;
+        if(width >= 77){
+            std::cout << "\n" << std::endl;
+            width = 0;
+        }
+        std::cout << s << "  ";
     }
     // Done for cleaner looking interface
     std::cout << std::endl;
@@ -219,7 +214,6 @@ void printUsersCurr(std::vector<std::string> currUsers){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief Given a string prompt gets a string
  * @params A prompt for input from the user
@@ -233,8 +227,6 @@ std::string getStrInput(std::string prompt){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// Functioning as expected
 /**
  * @brief Print the main menu for the program
  */
@@ -310,9 +302,9 @@ void view(std::vector<std::string> &a){
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 /**
-*@brief helper to convert to lower. Had problems with tolower.
-*@params input char to convert
-*/
+ * @brief helper to convert to lower. Had problems with tolower.
+ * @params input char to convert
+ */
 char etl(char in){
     if(in<='Z' && in>='A')
         return in-('Z'-'z');
@@ -475,11 +467,10 @@ void checkIn(std::vector<std::string> &users) {
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
-*@brief the function that allows a user to check out gear 
-*@params a vector of users
-*/
+ * @brief the function that allows a user to check out gear 
+ * @params a vector of users
+ */
 void checkOut(std::vector<std::string> &users){
 
         std::vector<std::string> checkOutGear;
@@ -585,7 +576,6 @@ void checkOut(std::vector<std::string> &users){
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
 /**
  * @brief Runs the database reads, calls the print menu and validates commands
  * @brief Calls the writes when editing is done
@@ -636,7 +626,7 @@ int main() {
     
     std::cout << "Quitting.....";
     writeNameFile(input_vector, "names");
-    std::cout << "\nDone." << std::endl;
-    
+    std::cout << "\033[32;1m\nDone.\033[0m" << std::endl;
+
     return 0;
 }

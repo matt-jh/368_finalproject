@@ -158,7 +158,10 @@ std::vector<std::string> splitString(std::string line, char seperator_char){
 // Functions
 void printUsersCurr(std::vector<std::string> currUsers){
     std::sort(currUsers.begin(), currUsers.end());
-    std::cout <<"\nThe users with gear checked out are: "<< std::endl;
+    std::cout 
+    		<< "\033[7;1m\nThe users with gear checked out are: " 
+    		<< "                               \033[0m"
+    		<< std::endl;
     for(int i = 0 ; i < currUsers.size() ; i++){
         std::string s = currUsers[i];
         s.erase(s.find_last_of("."), std::string::npos);
@@ -190,12 +193,13 @@ std::string getStrInput(std::string prompt){
  * @brief Print the main menu for the program
  */
 void printMenu(){
-    std::cout << " -----------------------------------" 
-            <<"-------------------------------" << std::endl;
-    std::cout << "\n| Check [O]ut Gear | Check [I]n Gear | " 
-            <<"[V]iew Gear in Use | [Q]uit |\n" << std::endl;
-    std::cout << " ------------------------------------" 
-            <<"------------------------------" << std::endl;
+	std::cout << std::endl;
+    std::cout << "\033[7;1m -----------------------------------\033[0m" 
+            <<"\033[7;1m------------------------------- \033[0m" << std::endl;
+    std::cout << "\033[7;1m| Check [O]ut Gear | Check [I]n Gear | \033[0m" 
+            <<"\033[7;1m[V]iew Gear in Use | [Q]uit |\033[0m" << std::endl;
+    std::cout << "\033[7;1m ------------------------------------\033[0m" 
+            <<"\033[7;1m------------------------------ \033[0m" << std::endl;
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -209,8 +213,10 @@ void view(std::vector<std::string> &a){
 
 	do{
 		printUsersCurr(a);
-        std::string userPrompt = "If you would like to view a users list enter";
-        userPrompt += " the name. \nOtherwise hit 'b' to go back ";
+        std::string userPrompt = "\033[7;1mIf you would like to view a users ";
+        userPrompt += "list enter the name.              \nOtherwise hit 'b' ";
+        userPrompt += "to go back                ";
+        userPrompt += "                        \033[0m";
 		std::string user = getStrInput(userPrompt);
 
 		//std::transform(user.begin(), user.end(), user.begin(), ::tolower);
@@ -229,7 +235,9 @@ void view(std::vector<std::string> &a){
 			testUser = true;
 			// Print the users gear file
 			std::vector<std::string> gear;
-            std::cout<<"Gear, Quantity ....   Expected Return Date"<<std::endl;
+            std::cout<<"\033[7;1mGear, Quantity, ....,  Expected Return Date"
+            		<<"                         \033[0m"
+            		<<std::endl;
 			gear = readGearFile(user);
 			for(auto i: gear){
 				std::cout << i << " ";
@@ -244,7 +252,7 @@ void view(std::vector<std::string> &a){
 			testUser = true;
 			hitB = true;
 		}else{
-			std::cout << "That user was not found!" << std::endl;
+			std::cout<<"\033[1;31mThat user was not found!\033[0m"<<std::endl;
 		}
 	}while(!testUser || !hitB);
 }
@@ -276,8 +284,9 @@ void checkIn(std::vector<std::string> &users) {
 
     do {
         printUsersCurr(users);
-        std::string userPrompt = "Please enter the user id from this list for";
-        userPrompt+=" the person returning gear or hit 'b' to o back.";
+        std::string userPrompt = "\033[7;1mPlease enter the user id from this ";
+        userPrompt+="list for the person returning    \ngear or hit 'b' to go";
+        userPrompt+=" back.                                         \033[0m";
         std::string user = getStrInput(userPrompt);
 
         // Replace with C++ contains equiv
@@ -286,8 +295,9 @@ void checkIn(std::vector<std::string> &users) {
             && user !="b"){
             //if (a.contains(user+".txt") && (user !="b"){
             do {
-                std::string all = getStrInput(
-                    "Are you returning all items? (y/n)");
+            	std::string all_prompt="\033[7;1m\nAre you returning all ";
+            	all_prompt += "items? (y/n)            \033[0m";
+                std::string all = getStrInput(all_prompt);
 
                 std::transform(all.begin(),all.end(),all.begin(),easytolower);
                 if (all == "y" || all == "n") {
@@ -318,6 +328,7 @@ void checkIn(std::vector<std::string> &users) {
                         "(no space needed) and ',' between the item name and "
                         "the quantity(no space needed).\nFor Example: sleeping "
                         "pad,2/tent,1";
+
                 std::vector <std::string> outstanding;
                 //= getStrInput(prompt).split("\\s*\\/\\s*");
 
@@ -385,13 +396,14 @@ void checkOut(std::vector<std::string> &users){
         bool hitB = false;
 
         do {
-            std::string tripLeader = "Please enter the trip leader's lastname";
-            tripLeader += " or hit 'b' to go back.";
+            std::string tripLeader = "\033[7;1mPlease enter the trip leader's ";
+            tripLeader += "lastname or hit 'b' to go back.      \033[0m";
             tripLeader = getStrInput(tripLeader);
 
             if(easytolower(tripLeader[0]) != 'b'){
-                std::string temp = getStrInput(
-                        "Please enter the trip leader's first initial.");
+            	std::string temp = "\033[7;1m\nPlease enter the trip leader's";
+                temp += " first initial.                       \033[0m";
+                temp = getStrInput(temp);
                 std::string userName = temp + tripLeader; 
                 // First_initialLastname
                 
@@ -399,26 +411,30 @@ void checkOut(std::vector<std::string> &users){
                     userName.begin(), easytolower);
 
 
-                std::string returnDate = "Please enter the expected date for ";
-                returnDate += "returning the gear. (mm/dd/yy)";
+                std::string returnDate = "\033[7;1m\nPlease enter the expected";
+                returnDate += " date for returning the gear. (mm/dd/yy)   ";
+                returnDate += "\033[0m";
                 returnDate = getStrInput(returnDate);
 
                 temp = userName + ".txt";
                 if(std::find(users.begin(), users.end(), userName + ".txt") 
                     != users.end()){
                     // Include Date
-                    std::cout << "It looks like you already have gear checked "
-                            << "out. You can check out more, but please " 
-                            << "remember to return both sets of gear.\n" 
-                            << std::endl;
+                    std::string pls_ret="\033[33;1mIt looks like you already";
+                    pls_ret +=" have gear checked out. You can check out\n";
+                    pls_ret += "more, but please emember to return both sets";
+                    pls_ret += " of gear.\n\033[0m";
+                    std::cout << pls_ret << std::endl;
                 }
 
-                std::string items ="Please enter all the items you wish ";
-                items+= "to use and the quantity of that item.\nPlease put '/'";
-                items+= " between items (no space needed) and ',' between the";
-                items+= "\nitem name and the quantity(no space needed).\n";
-                items+= "For Example: sleeping pad,2/tent,1";
+                std::string items ="\033[7;1m\nPlease enter all the items you";
+                items +=" wish to use and the quantity of that \nitem. Please ";
+                items += "put '/' between items (no space needed) and ',' ";
+                items += "between\nthe item name and the quantity ";
+                items += "(no space needed).		    \033[0m\n";
+                items += "For Example: sleeping pad,2/tent,1\n";
                 items = getStrInput(items);
+                
 
                 // Add to an arraylist
                 std::vector<std::string> tempSplit;
@@ -445,7 +461,7 @@ void checkOut(std::vector<std::string> &users){
                 // Write the file
                 std::cout << "Saving File....." << std::endl;
                 writeGearFile(checkOutGear, userName);
-                std::cout << "Done." << std::endl;
+                std::cout << "\033[32;1mDone.\033[0m" << std::endl;
                 // Add to the list of names
                 users.push_back(userName + ".txt");
                 std::cout << "Items Recorded! Have Fun!" << std::endl;
